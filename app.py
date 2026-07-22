@@ -30,15 +30,14 @@ if st.button("🚀 Générer la FDEC Officielle"):
     else:
         with st.spinner("Analyse métier BPF et structuration du document en cours..."):
             try:
-                # Récupération SECRÈTE de la clé API (Invisible pour l'utilisateur)
+                # Récupération SECRÈTE de la clé API
                 api_key = st.secrets["GEMINI_API_KEY"]
                 genai.configure(api_key=api_key)
                 
-                # On regroupe les consignes et les données dans un seul texte pour éviter le bug de l'API
                 prompt_complet = f"""Tu es un expert QA Pharmaceutique BPF. 
-                Prends le récit d'incident brut et structure-le en un rapport professionnel. 
-                Réponds UNIQUEMENT au format JSON avec ces 5 clés exactes :
-                "description_factuelle", "mesures_conservatoires", "criticite" (doit être MINEURE, MAJEURE ou CRITIQUE), "justification_criticite", "capa" (pistes d'investigation).
+                Structure ce récit d'incident. 
+                Renvoie UNIQUEMENT un objet JSON valide. Ne mets AUCUN texte avant, AUCUN texte après, et n'utilise pas de balises Markdown.
+                Les 5 clés exactes du JSON sont : "description_factuelle", "mesures_conservatoires", "criticite", "justification_criticite", "capa".
 
                 --- DONNÉES DE L'INCIDENT ---
                 Atelier: {atelier}
@@ -46,18 +45,21 @@ if st.button("🚀 Générer la FDEC Officielle"):
                 Incident: {description}
                 """
                 
-                # On appelle la version PRO de Gemini, de la façon la plus simple possible
-                model = genai.GenerativeModel('gemini-1.5-pro')
+                # Le modèle de base, sans option bloquante
+                model = genai.GenerativeModel('gemini-1.5-flash')
                 
-                response = model.generate_content(
-                    prompt_complet,
-                    generation_config={"response_mime_type": "application/json"}
-                )
+                # Appel simple
+                response = model.generate_content(prompt_complet)
                 
-                user_prompt = f"Atelier: {atelier}\nLot: {lot}\nIncident: {description}"
+                # Nettoyage manuel de la réponse au cas où l'IA rajoute des caractères parasites
+                texte_brut = response.text.strip()
+                if texte_brut.startswith("```json"):
+                    texte_brut = texte_brut.replace("```json", "").replace("```", "").strip()
+                elif texte_brut.startswith("```"):
+                    texte_brut = texte_brut.replace("```", "").strip()
                 
-                response = model.generate_content(user_prompt)
-                data = json.loads(response.text)
+                # Transformation en dictionnaire Python
+                data = json.loads(texte_brut)
                 
                 class PDF(FPDF):
                     def header(self):
