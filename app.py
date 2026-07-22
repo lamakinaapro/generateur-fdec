@@ -40,7 +40,7 @@ if st.button("🚀 Générer la FDEC Officielle"):
                 "description_factuelle", "mesures_conservatoires", "criticite" (doit être MINEURE, MAJEURE ou CRITIQUE), "justification_criticite", "capa" (pistes d'investigation)."""
                 
                 model = genai.GenerativeModel(
-                    'gemini-1.5-flash',
+                    'gemini-1.5-flash-latest',
                     system_instruction=system_prompt,
                     generation_config={"response_mime_type": "application/json"}
                 )
