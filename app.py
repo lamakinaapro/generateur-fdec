@@ -34,14 +34,23 @@ if st.button("🚀 Générer la FDEC Officielle"):
                 api_key = st.secrets["GEMINI_API_KEY"]
                 genai.configure(api_key=api_key)
                 
-                system_prompt = """Tu es un expert QA Pharmaceutique BPF. 
+                # On regroupe les consignes et les données dans un seul texte pour éviter le bug de l'API
+                prompt_complet = f"""Tu es un expert QA Pharmaceutique BPF. 
                 Prends le récit d'incident brut et structure-le en un rapport professionnel. 
                 Réponds UNIQUEMENT au format JSON avec ces 5 clés exactes :
-                "description_factuelle", "mesures_conservatoires", "criticite" (doit être MINEURE, MAJEURE ou CRITIQUE), "justification_criticite", "capa" (pistes d'investigation)."""
+                "description_factuelle", "mesures_conservatoires", "criticite" (doit être MINEURE, MAJEURE ou CRITIQUE), "justification_criticite", "capa" (pistes d'investigation).
+
+                --- DONNÉES DE L'INCIDENT ---
+                Atelier: {atelier}
+                Lot: {lot}
+                Incident: {description}
+                """
                 
-                model = genai.GenerativeModel(
-                    'gemini-1.5-flash-002',
-                    system_instruction=system_prompt,
+                # On appelle la version PRO de Gemini, de la façon la plus simple possible
+                model = genai.GenerativeModel('gemini-1.5-pro')
+                
+                response = model.generate_content(
+                    prompt_complet,
                     generation_config={"response_mime_type": "application/json"}
                 )
                 
