@@ -57,9 +57,11 @@ if st.button("🚀 Générer la FDEC Officielle"):
                     response_format={"type": "json_object"}
                 )
                 
-                # Récupération des données et nettoyage des caractères spéciaux
+                # Récupération des données et nettoyage approfondi des caractères spéciaux
                 texte_ia = response.choices[0].message.content
                 texte_ia = texte_ia.replace("’", "'").replace("œ", "oe").replace("€", " euros")
+                texte_ia = texte_ia.replace("‑", "-").replace("–", "-").replace("—", "-") # Convertit tous les tirets bizarres en tirets simples
+                texte_ia = texte_ia.replace("«", '"').replace("»", '"').replace("…", "...") # Convertit les guillemets et points de suspension
                 data = json.loads(texte_ia)
                 
                 # ---------------------------------------------------------
