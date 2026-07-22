@@ -1,5 +1,5 @@
 import streamlit as st
-import google.generativeai as genai
+from openai import OpenAI
 import json
 from datetime import datetime
 from fpdf import FPDF
@@ -30,13 +30,16 @@ if st.button("🚀 Générer la FDEC Officielle"):
     else:
         with st.spinner("Analyse métier BPF et structuration du document en cours..."):
             try:
-                # Récupération SECRÈTE de la clé API
-                api_key = st.secrets["GEMINI_API_KEY"]
-                genai.configure(api_key=api_key)
+                # Connexion à l'API gratuite Groq
+                api_key = st.secrets["GROQ_API_KEY"]
+                client = OpenAI(
+                    base_url="https://api.groq.com/openai/v1",
+                    api_key=api_key
+                )
                 
                 prompt_complet = f"""Tu es un expert QA Pharmaceutique BPF. 
                 Structure ce récit d'incident. 
-                Renvoie UNIQUEMENT un objet JSON valide. Ne mets AUCUN texte avant, AUCUN texte après, et n'utilise pas de balises Markdown.
+                Réponds UNIQUEMENT au format JSON valide, sans aucune balise Markdown.
                 Les 5 clés exactes du JSON sont : "description_factuelle", "mesures_conservatoires", "criticite", "justification_criticite", "capa".
 
                 --- DONNÉES DE L'INCIDENT ---
@@ -45,22 +48,19 @@ if st.button("🚀 Générer la FDEC Officielle"):
                 Incident: {description}
                 """
                 
-                # LA CORRECTION EST ICI : On utilise le modèle universel débloqué en Europe
-                model = genai.GenerativeModel('gemini-pro')
+                # Appel du modèle Llama 3.1 sur Groq
+                response = client.chat.completions.create(
+                    model="llama-3.1-70b-versatile",
+                    messages=[
+                        {"role": "user", "content": prompt_complet}
+                    ],
+                    response_format={"type": "json_object"}
+                )
                 
-                # Appel simple
-                response = model.generate_content(prompt_complet)
+                # Récupération des données
+                data = json.loads(response.choices[0].message.content)
                 
-                # Nettoyage manuel de la réponse
-                texte_brut = response.text.strip()
-                if texte_brut.startswith("```json"):
-                    texte_brut = texte_brut.replace("```json", "").replace("```", "").strip()
-                elif texte_brut.startswith("```"):
-                    texte_brut = texte_brut.replace("```", "").strip()
-                
-                # Transformation en dictionnaire Python
-                data = json.loads(texte_brut)
-                
+                # Génération du modèle PDF
                 class PDF(FPDF):
                     def header(self):
                         self.set_font("helvetica", "B", 14)
