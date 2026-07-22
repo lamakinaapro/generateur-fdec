@@ -57,15 +57,35 @@ if st.button("🚀 Générer la FDEC Officielle"):
                     response_format={"type": "json_object"}
                 )
                 
-                # Récupération des données et nettoyage approfondi des caractères spéciaux
+                # Récupération des données brutes
                 texte_ia = response.choices[0].message.content
-                texte_ia = texte_ia.replace("’", "'").replace("œ", "oe").replace("€", " euros")
-                texte_ia = texte_ia.replace("‑", "-").replace("–", "-").replace("—", "-") # Convertit tous les tirets bizarres en tirets simples
-                texte_ia = texte_ia.replace("«", '"').replace("»", '"').replace("…", "...") # Convertit les guillemets et points de suspension
                 data = json.loads(texte_ia)
                 
                 # ---------------------------------------------------------
-                # GÉNERATEUR PDF AVANCÉ (Reproduction de la charte graphique)
+                # BOUCLIER ANTI-PLANTAGE (Nettoyage extrême à 100%)
+                # ---------------------------------------------------------
+                def nettoyage_extreme(valeur):
+                    # Si l'IA a fait une liste, on la transforme en texte
+                    if isinstance(valeur, list):
+                        valeur = "\n".join([f"- {str(item)}" for item in valeur])
+                    
+                    valeur = str(valeur)
+                    
+                    # 1. Remplacement manuel des caractères classiques
+                    valeur = valeur.replace("’", "'").replace("‘", "'").replace("œ", "oe").replace("€", " euros")
+                    valeur = valeur.replace("‑", "-").replace("–", "-").replace("—", "-")
+                    valeur = valeur.replace("«", '"').replace("»", '"').replace("…", "...")
+                    valeur = valeur.replace(" ", " ").replace(" ", " ") # Remplace tous les espaces invisibles bizarres par un espace normal
+                    
+                    # 2. Le filtre absolu : tout caractère non supporté par la police PDF sera remplacé par "?" au lieu de faire planter l'app
+                    return valeur.encode('latin-1', errors='replace').decode('latin-1')
+
+                # On applique le bouclier à TOUTES les données de l'IA
+                for cle in data:
+                    data[cle] = nettoyage_extreme(data[cle])
+                
+                # ---------------------------------------------------------
+                # GÉNERATEUR PDF AVANCÉ
                 # ---------------------------------------------------------
                 class PDF(FPDF):
                     def header(self):
@@ -113,12 +133,7 @@ if st.button("🚀 Générer la FDEC Officielle"):
                         
                     def section_body(self, body):
                         self.set_font("helvetica", "", 9.5)
-                        # Si l'IA a fait une liste, on la transforme en texte avec des tirets
-                        if isinstance(body, list):
-                            body = "\n".join([f"- {str(item)}" for item in body])
-                        else:
-                            body = str(body) # On force le format texte par sécurité
-                        self.multi_cell(0, 5, body)
+                        self.multi_cell(0, 5, str(body))
                         self.ln(4)
 
                 pdf = PDF()
