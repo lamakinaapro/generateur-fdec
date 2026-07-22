@@ -113,6 +113,11 @@ if st.button("🚀 Générer la FDEC Officielle"):
                         
                     def section_body(self, body):
                         self.set_font("helvetica", "", 9.5)
+                        # Si l'IA a fait une liste, on la transforme en texte avec des tirets
+                        if isinstance(body, list):
+                            body = "\n".join([f"- {str(item)}" for item in body])
+                        else:
+                            body = str(body) # On force le format texte par sécurité
                         self.multi_cell(0, 5, body)
                         self.ln(4)
 
