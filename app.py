@@ -45,13 +45,13 @@ if st.button("🚀 Générer la FDEC Officielle"):
                 Incident: {description}
                 """
                 
-                # Le modèle de base, sans option bloquante
-                model = genai.GenerativeModel('gemini-1.5-flash')
+                # LA CORRECTION EST ICI : On utilise le modèle universel débloqué en Europe
+                model = genai.GenerativeModel('gemini-pro')
                 
                 # Appel simple
                 response = model.generate_content(prompt_complet)
                 
-                # Nettoyage manuel de la réponse au cas où l'IA rajoute des caractères parasites
+                # Nettoyage manuel de la réponse
                 texte_brut = response.text.strip()
                 if texte_brut.startswith("```json"):
                     texte_brut = texte_brut.replace("```json", "").replace("```", "").strip()
@@ -124,4 +124,4 @@ if st.button("🚀 Générer la FDEC Officielle"):
                 )
                 
             except Exception as e:
-                st.error(f"Une erreur inattendue est survenue : {e}")
+                st.error(f"Erreur : {e}")
