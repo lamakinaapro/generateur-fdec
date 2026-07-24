@@ -22,7 +22,6 @@ description = st.text_area(
     height=150,
     placeholder="Ex: Lors de la phase d'introduction du PA, la balance a dérivé de 1.5g. Le conteneur a été isolé."
 )
-
 # 3. Moteur de génération IA et PDF
 if st.button("🚀 Générer la FDEC Officielle"):
     if not atelier or not description:
