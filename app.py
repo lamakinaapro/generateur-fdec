@@ -4,24 +4,75 @@ import json
 from datetime import datetime
 from fpdf import FPDF
 
-# 1. Configuration de l'interface
-st.set_page_config(page_title="Générateur FDEC", page_icon="📄")
-st.title("📄 Assistant FDEC - Production & QA")
-st.markdown("Module de saisie rapide d'incidents (Pesée, Ligne, MOP) et génération de déviations BPF.")
+# 1. Configuration de l'interface (Design Logiciel Pro)
+st.set_page_config(page_title="Système Qualité | FDEC", page_icon="🏭", layout="wide")
+
+# --- CSS PERSONNALISÉ POUR MASQUER STREAMLIT ET STYLISER ---
+st.markdown("""
+<style>
+    /* Masquer le menu en haut à droite et le pied de page natif de Streamlit */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    /* Styliser le bouton d'action principal pour qu'il fasse plus professionnel */
+    .stButton>button {
+        width: 100%;
+        border-radius: 8px;
+        background-color: #1A365D; /* Bleu foncé corporate */
+        color: white;
+        padding: 15px;
+        font-size: 16px;
+        font-weight: bold;
+        border: none;
+    }
+    .stButton>button:hover {
+        background-color: #2A4A7F;
+        color: white;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# --- BARRE LATÉRALE (Faux menu Intranet) ---
+with st.sidebar:
+    st.markdown("### 👤 Session Opérateur")
+    st.write("Terminal : **Tablette Zone C**")
+    st.write("Réseau : 🟢 **Connecté (Sécurisé)**")
+    st.divider()
+    st.markdown("#### ⚙️ Modules")
+    st.markdown("- 📄 **Déclaration FDEC** (Actif)")
+    st.markdown("- 🔍 Suivi des CAPA")
+    st.markdown("- 📈 Audit Trail")
+    st.divider()
+    st.caption("Système de Gestion Documentaire QA - Démo v2.1")
+
+# --- EN-TÊTE PROFESSIONNEL ---
+col_titre, col_date = st.columns([4, 1])
+with col_titre:
+    st.title("🏭 Portail Assurance Qualité")
+    st.markdown("#### Module de saisie automatisée des déviations BPF")
+with col_date:
+    st.info(f"📅 {datetime.now().strftime('%d/%m/%Y')}")
 st.divider()
 
-# 2. Formulaire de saisie terrain
-col1, col2 = st.columns(2)
-with col1:
-    atelier = st.text_input("Secteur / Atelier", placeholder="Ex: Atelier Pesée Cabine C3")
-with col2:
-    lot = st.text_input("Produit & N° de Lot", placeholder="Ex: Fervex Lot 8849-A")
+# 2. Formulaire de saisie terrain (Dans une carte visuelle encadrée)
+st.markdown("### 📋 Création d'une nouvelle déviation")
+st.caption("Veuillez renseigner les champs ci-dessous. Le système d'Intelligence Artificielle structurera les données brutes selon la norme BPF.")
 
-description = st.text_area(
-    "Description factuelle de l'incident (Texte ou dictée vocale)", 
-    height=150,
-    placeholder="Ex: Lors de la phase d'introduction du PA, la balance a dérivé de 1.5g. Le conteneur a été isolé."
-)
+with st.container(border=True):
+    col1, col2 = st.columns(2)
+    with col1:
+        atelier = st.text_input("📍 Secteur / Atelier", placeholder="Ex: Atelier Pesée Cabine C3")
+    with col2:
+        lot = st.text_input("📦 Produit & N° de Lot", placeholder="Ex: Fervex Lot 8849-A")
+
+    description = st.text_area(
+        "📝 Description factuelle de l'incident (Saisie clavier ou vocale)", 
+        height=150,
+        placeholder="Ex: Lors de la phase d'introduction du PA, la balance a dérivé de 1.5g. Le conteneur a été isolé."
+    )
+
+st.write("") # Petit espace avant le bouton de validation
 
 # 3. Moteur de génération IA et PDF
 if st.button("🚀 Générer la FDEC Officielle"):
