@@ -5,112 +5,23 @@ from datetime import datetime
 from fpdf import FPDF
 
 # 1. Configuration de l'interface
-st.set_page_config(page_title="Système de Qualité", layout="wide")
-
-# --- CSS PERSONNALISÉ POUR FORCER LE STYLE LOGICIEL INDUSTRIEL (ERP) ---
-st.markdown("""
-<style>
-    /* Forcer le thème clair et la police d'entreprise (type Windows/Microsoft) */
-    .stApp {
-        background-color: #F4F6F9 !important; /* Gris très clair logiciel */
-    }
-    .stApp, p, h1, h2, h3, h4, h5, h6, span, label, div {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
-        color: #2C3E50 !important; /* Texte gris/bleu très foncé */
-    }
-    
-    /* Masquer l'en-tête et le pied de page Streamlit */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    
-    /* Styliser les champs de texte pour faire "formulaire strict" */
-    .stTextInput>div>div>input, .stTextArea>div>div>textarea {
-        background-color: #FFFFFF !important;
-        border: 1px solid #CED4DA !important;
-        border-radius: 3px !important;
-        color: #333333 !important;
-    }
-    
-    /* Styliser le bouton (Bleu classique industriel) */
-    .stButton>button {
-        width: 100%;
-        border-radius: 3px !important;
-        background-color: #0056B3 !important; 
-        color: #FFFFFF !important;
-        padding: 10px 15px !important;
-        font-size: 14px !important;
-        font-weight: 600 !important;
-        text-transform: uppercase !important;
-        border: none !important;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
-    }
-    .stButton>button:hover {
-        background-color: #004494 !important;
-        color: #FFFFFF !important;
-    }
-    
-    /* Styliser la barre latérale (Sidebar) */
-    [data-testid="stSidebar"] {
-        background-color: #1A252F !important; /* Bleu nuit presque noir */
-    }
-    [data-testid="stSidebar"] * {
-        color: #ECF0F1 !important; /* Texte clair sur fond sombre */
-    }
-    
-    /* Ligne de séparation discrète */
-    hr {
-        border-top: 1px solid #DEE2E6 !important;
-        margin-top: 10px;
-        margin-bottom: 20px;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-# --- BARRE LATÉRALE (Menu du logiciel) ---
-with st.sidebar:
-    st.markdown("### INFORMATIONS SESSION")
-    st.write("Utilisateur : J. Dupont")
-    st.write("Profil : Chef d'équipe")
-    st.write("Terminal : Poste-C3-Atelier")
-    st.write("Statut Réseau : Connecté")
-    st.divider()
-    st.markdown("### MODULES BPF")
-    st.markdown("- **Déclaration Déviation (En cours)**")
-    st.markdown("- Suivi des CAPA")
-    st.markdown("- Historique des lots")
-    st.markdown("- Audit Trail")
-    st.divider()
-    st.caption("Système Documentaire QA - v2.1.4")
-
-# --- EN-TÊTE PROFESSIONNEL ---
-col_titre, col_date = st.columns([4, 1])
-with col_titre:
-    st.markdown("<h3 style='color: #0056B3 !important; margin-bottom: 0;'>SYSTÈME QUALITÉ : GESTION DES DÉVIATIONS</h3>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size: 14px; color: #7F8C8D !important;'>Module d'enregistrement informatisé selon référentiel BPF</p>", unsafe_allow_html=True)
-with col_date:
-    st.write("") # Espace d'alignement
-    st.markdown(f"<div style='text-align: right; font-size: 14px; color: #7F8C8D !important;'>Date du jour : {datetime.now().strftime('%d/%m/%Y')}</div>", unsafe_allow_html=True)
+st.set_page_config(page_title="Générateur FDEC", page_icon="📄")
+st.title("📄 Assistant FDEC - Production & QA")
+st.markdown("Module de saisie rapide d'incidents (Pesée, Ligne, MOP) et génération de déviations BPF.")
 st.divider()
 
 # 2. Formulaire de saisie terrain
-st.markdown("<h5 style='color: #2C3E50 !important;'>FORMULAIRE DE DÉCLARATION (FDEC)</h5>", unsafe_allow_html=True)
+col1, col2 = st.columns(2)
+with col1:
+    atelier = st.text_input("Secteur / Atelier", placeholder="Ex: Atelier Pesée Cabine C3")
+with col2:
+    lot = st.text_input("Produit & N° de Lot", placeholder="Ex: Fervex Lot 8849-A")
 
-# Conteneur blanc avec une fine bordure pour bien délimiter la zone de saisie
-with st.container(border=True):
-    col1, col2 = st.columns(2)
-    with col1:
-        atelier = st.text_input("Secteur / Atelier :", placeholder="Ex: Pesée Cabine C3")
-    with col2:
-        lot = st.text_input("Produit et N° de Lot :", placeholder="Ex: Fervex Lot 8849-A")
-
-    description = st.text_area(
-        "Description factuelle de l'événement (Saisie stricte des faits) :", 
-        height=150,
-        placeholder="Décrivez l'incident rencontré..."
-    )
-
-st.write("") # Petit espace avant le bouton
+description = st.text_area(
+    "Description factuelle de l'incident (Texte ou dictée vocale)", 
+    height=150,
+    placeholder="Ex: Lors de la phase d'introduction du PA, la balance a dérivé de 1.5g. Le conteneur a été isolé."
+)
 
 # 3. Moteur de génération IA et PDF
 if st.button("🚀 Générer la FDEC Officielle"):
